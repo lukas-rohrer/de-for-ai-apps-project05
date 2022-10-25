@@ -55,7 +55,6 @@ class StageToRedshiftOperator(BaseOperator):
             credentials.secret_key,
             self.region,
             self.json
-
         )
         redshift.run(formatted_sql)
 
