@@ -9,6 +9,11 @@ from helpers import SqlQueries
 # AWS_KEY = os.environ.get('AWS_KEY')
 # AWS_SECRET = os.environ.get('AWS_SECRET')
 
+
+# LOG_DATA='s3://udacity-dend/log-data'
+# LOG_JSONPATH='s3://udacity-dend/log_json_path.json'
+# SONG_DATA='s3://udacity-dend/song_data/A/A'
+
 default_args = {
     'owner': 'lukas-rohrer',
     'depends_on_past': False,
@@ -16,7 +21,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
     'catchup': False,
     'email_on_retry': False,
-    # needed?? 'start_date': datetime(2019, 1, 12),
+    'start_date': datetime(2022, 10, 25),
 }
 
 dag = DAG('project05_dag',
@@ -29,11 +34,25 @@ start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='staging_events',
+    s3_bucket='udacity-dend',
+    s3_key='log_data',
+    region='us-west-2',
+    json='s3://udacity-dend/log_json_path.json',
     dag=dag
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='staging_songs',
+    s3_bucket='udacity-dend',
+    s3_key='song_data/A/A', # remove A/A/ after testing
+    region='us-west-2',
+    json='auto',
     dag=dag
 )
 
