@@ -96,10 +96,27 @@ load_time_dimension_table = LoadDimensionOperator(
     dag=dag
 )
 
+
+dq_checks=[
+{'check_sql': """
+SELECT COUNT(*) 
+FROM {tbl}
+WHERE(
+    SELECT a.attname
+    FROM   pg_index i
+    JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                        AND a.attnum = ANY(i.indkey)
+    WHERE  i.indrelid = '{tbl}'::regclass
+    AND    i.indisprimary) IS NULL;
+    """, 'expected_result': 0},
+]
+
+
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
     redshift_conn_id='redshift',
     table='songplays',
+    dq_checks=dq_checks,
     dag=dag
 )
 

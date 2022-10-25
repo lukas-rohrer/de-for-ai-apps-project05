@@ -40,6 +40,7 @@ class StageToRedshiftOperator(BaseOperator):
     def execute(self, context):
         aws_hook = AwsHook(self.aws_credentials_id)
         credentials = aws_hook.get_credentials()
+        self.log.info(f"AWS credentials read: Access={credentials.access_key}, Secret={credentials.secret_key}")
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         self.log.info("Clearing data from destination Redshift table")
@@ -57,6 +58,8 @@ class StageToRedshiftOperator(BaseOperator):
             self.json
         )
         redshift.run(formatted_sql)
+
+        self.log.info("Copying into the staging tables finished.")
 
 
 
